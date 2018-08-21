@@ -1,11 +1,17 @@
+# General modules
 import json
 import re
 import sys
 
+# Browser helper
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
+# HTML parser
 from bs4 import BeautifulSoup
+
+# Command line options parser
+from optparse import OptionParser
 
 def main():
     # Define URL to be scraped: the implementation of this web scraper is website
@@ -13,44 +19,46 @@ def main():
     base_url = 'https://www.ncbi.nlm.nih.gov'
     url = base_url + '/pubmed/?term=cancer'
 
-    # Fails if wrong arguments are passed
-    # TODO: make this better: make the name of the file optional and add a help
-    if len(sys.argv) != 3:
-        print('This script requires exactly two arguments: the first being an ' +
-                'integer representing the number of pages to be scraped and the ' +
-                'second being the path of the output json file')
-        sys.exit(1)
+    # Get executions parameters
+    parser = OptionParser()
+    parser.add_option('-f', '--file', action='store', type='string', dest='output_file',
+            default='data/output.json', help='Define the name of file where the ' +
+            'scraped data will be stored. Default: %default')
+    parser.add_option('-n', action='store', type='int', dest='number_of_pages',
+            default=1, help='Define the number of pages to be scraped. Default: ' +
+            '%default')
+
+    (options, args) = parser.parse_args()
 
     # Create a new Firefox headless session
-    options = Options()
-    options.add_argument("--headless")
-    driver = webdriver.Firefox(firefox_options=options)
+    f_options = Options()
+    f_options.add_argument('--headless')
+    driver = webdriver.Firefox(firefox_options=f_options)
     driver.implicitly_wait(30)
     driver.get(url)
 
     # Change to sort by best match
     driver.find_element_by_css_selector('.relevancead_sort').click()
 
-    # Article is defined as a set as there must be no repetition of links. In the
-    # case of repetition, we would have: slower performance (increase of requests)
-    # and a bigger influence of some articles over others.
+    # 'Article' is defined as a set as there must be no repetition of links. In
+    # the case of repetition, we would have: slower performance (increase of
+    # requests) and a bigger influence of some articles over others.
     articles = set()
 
-    number_of_pages = int(sys.argv[1])
     print('Start reading website pages')
-    for i in range(number_of_pages):
+    for i in range(options.number_of_pages):
         print('Reading page', i+1)
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         # Find all the links for articles in the page
-        for link in soup.find_all('a', href=re.compile("^/pubmed/[0-9]+")):
+        for link in soup.find_all('a', href=re.compile('^/pubmed/[0-9]+')):
             articles.add(base_url + link['href'])
         # Go to next page
         driver.find_element_by_css_selector('.active.page_link.next').click()
 
     print('Found', len(articles), 'articles')
 
-    parsed = []
     print('Start processing articles')
+    parsed = []
     i = 1
     ignored = 0
     # Iterate over the chosen articles
@@ -79,7 +87,7 @@ def main():
 
     # Write results to an external file
     print('Write results to output file')
-    output_file = open(sys.argv[2], 'w')
+    output_file = open(options.output_file, 'w')
     output_file.write(json.dumps(parsed, sort_keys=True, indent=4))
     output_file.close()
 
