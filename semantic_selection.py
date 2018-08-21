@@ -3,51 +3,11 @@ import json
 import math
 import re
 
-# Wordnet module for verifying features relations
-from textblob.wordnet import Synset
-
 # Command line options parser
 from optparse import OptionParser
 
-class Feature:
-    def __init__(self, feature_name, feature_synset):
-        if not (isinstance(feature_name, str)):
-            raise ValueError('The first argument must be a string')
-        # TODO: Not all features can be associated with a synset => Make this
-        # check and the synset attribute "optional"
-        if not (isinstance(feature_synset, str)):
-            raise ValueError('The second argument must be a string')
-        self.name = feature_name.lower()
-        self.synset = Synset(feature_synset)
-        # self.frequencies stores how many times the feature appears in each
-        # document divided bt the total quantity of words (term frequencies)
-        # TODO: think about this: array of objects?
-        self.frequencies = []
-        # self.doc_count stores the amount of documents containing the feature
-        self.doc_count = 0
-
-    def __repr__(self):
-        return '<Feature Name: %s; Synset: %s>' % (self.name, self.synset)
-
-    def __str__(self):
-        return '<Feature Name: %s; Synset: %s>' % (self.name, self.synset)
-
-    # TODO: Verify if the other feature has a synset
-    def path_similarity(self, feature):
-        if not (isinstance(feature, Feature)):
-            raise ValueError('The first argument must be a Feature')
-        return self.synset.path_similarity(feature.synset)
-
-    def add_frequency(self, frequency):
-        self.frequencies.append(frequency)
-
-    def increase_doc_count(self):
-        self.doc_count += 1
-
-    def get_idf(self, total_count):
-        return math.log(total_count/self.doc_count)
-
-    # TODO: add method get_tf_idf
+# Feature classes
+from feature import GeneralFeature, MainFeature
 
 
 def similar_features(features, threshold):
@@ -87,7 +47,10 @@ def main():
             'to', 'was', 'will', 'with']
 
     # Add all features (cancer should be treated separately though)
-    features = [Feature('cancer', 'cancer.n.01')]
+    features = [MainFeature('cancer')]
+
+    # TODO: Add ids to the articles? Not sure if needed in the case there is no
+    # reference to the feature in the text
 
     # Iterate over all articles
     for article in data:
@@ -103,9 +66,16 @@ def main():
 
         # Iterate on all features
         for feature in features:
+            d = {}
             for key in article:
                 # Count frequencies on each key of this article
-                feature.add_frequency(article[key].count(feature.name)/len(article[key]))
+                d[key] = article[key].count(feature.name)/len(article[key])
+            feature.add_frequency(d)
+
+
+    # TODO: Remove this print
+    print(features[0].frequencies)
+
 
 if __name__ == '__main__':
     main()
