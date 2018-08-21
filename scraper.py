@@ -1,7 +1,6 @@
 # General modules
 import json
 import re
-import sys
 
 # Browser helper
 from selenium import webdriver
@@ -14,11 +13,6 @@ from bs4 import BeautifulSoup
 from optparse import OptionParser
 
 def main():
-    # Define URL to be scraped: the implementation of this web scraper is website
-    # dependent as we have a very specific objective and this should be hardcoded.
-    base_url = 'https://www.ncbi.nlm.nih.gov'
-    url = base_url + '/pubmed/?term=cancer'
-
     # Get executions parameters
     parser = OptionParser()
     parser.add_option('-f', '--file', action='store', type='string', dest='output_file',
@@ -27,8 +21,12 @@ def main():
     parser.add_option('-n', action='store', type='int', dest='number_of_pages',
             default=1, help='Define the number of pages to be scraped. Default: ' +
             '%default')
-
     (options, args) = parser.parse_args()
+
+    # Define URL to be scraped: the implementation of this web scraper is website
+    # dependent as we have a very specific objective and this should be hardcoded.
+    base_url = 'https://www.ncbi.nlm.nih.gov'
+    url = base_url + '/pubmed/?term=cancer'
 
     # Create a new Firefox headless session
     f_options = Options()
@@ -94,5 +92,5 @@ def main():
     # Closes the session
     driver.quit()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
