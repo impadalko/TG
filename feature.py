@@ -1,12 +1,9 @@
 # General imports
 import math
 
-# Wordnet module for verifying features relations
-from textblob.wordnet import Synset
-
 class Feature:
     def __init__(self, feature_name):
-        self.name = feature_name.lower()
+        self.name = feature_name.lower().split()
 
         # self.frequencies stores how many times the feature appears in each
         # document divided bt the total quantity of words (term frequencies)
@@ -17,6 +14,28 @@ class Feature:
 
     def get_tf(self):
         return self.frequencies
+
+    # Calculate the term frequency by counting the amount of ocurrences of the
+    # name of the feature in the text (both of these must be array of strings)
+    # and dividing it by the total amount of words in the text.
+    # TODO: Implement KMP for counting!
+    def calculate_tf(self, text):
+        count = 0
+        i = 0
+        j = 0
+        while i < len(text):
+            while j < len(self.name):
+                if text[i + j] != self.name[j]:
+                    j = 0
+                    i += 1
+                    break
+                j += 1
+            else:
+                count += 1
+                i += j
+                j = 0
+        return len(self.name)*count/len(text)
+
 
 class MainFeature(Feature):
     def __init__(self, feature_name):
@@ -45,28 +64,16 @@ class MainFeature(Feature):
         return '<Main Feature Name: %s>' % (self.name)
 
 class GeneralFeature(Feature):
-    def __init__(self, feature_name, feature_synset=None):
+    def __init__(self, feature_name):
         super().__init__(feature_name)
-
-        self.synset = None
-        try:
-            self.synset = Synset(feature_synset)
-        except:
-            print('An error has occuring on creating the Synset for', feature_name)
-
         # self.doc_count stores the amount of documents containing the feature
         self.doc_count = 0
 
     def __repr__(self):
-        return '<Feature Name: %s; Synset: %s>' % (self.name, self.synset)
+        return '<Feature Name: %s>' % (self.name)
 
     def __str__(self):
-        return '<Feature Name: %s; Synset: %s>' % (self.name, self.synset)
-
-    def path_similarity(self, feature):
-        if isinstance(feature, GeneralFeature) and feature.synset and self.synset:
-            return feature.synset.path_similarity(self.synset)
-        return 0
+        return '<Feature Name: %s>' % (self.name)
 
     def increase_doc_count(self):
         self.doc_count += 1

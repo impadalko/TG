@@ -9,20 +9,6 @@ from optparse import OptionParser
 # Feature classes
 from feature import GeneralFeature, MainFeature
 
-def similar_features(features, threshold):
-    selected_features = []
-    for feature in features:
-        for selected_feature in selected_features:
-            # We use path similarity because we are looking for hypernyms
-            if feature.path_similarity(selected_feature) > threshold:
-                break
-        else:
-            # If no similar enough feature is found among the already selected
-            # ones, add the current synset to the current one
-            selected_features.append(feature)
-    return selected_features
-
-
 # Main routine
 def main():
     # Get executions parameters
@@ -31,8 +17,6 @@ def main():
             default='data/output.json', help='Define the name of file where the ' +
             'scraped data is stored. Default: %default')
     (options, args) = parser.parse_args()
-
-    # TODO: hypernims stuff (add a file with the features?)
 
     # Opens input file
     input_file = open(options.input_file, 'r')
@@ -48,8 +32,7 @@ def main():
     main = MainFeature('cancer')
 
     # TODO: Add all features
-    features = [GeneralFeature('sex', 'sex.n.02'), GeneralFeature('age', 'age.n.01'),
-            GeneralFeature('alcohol', 'alcohol.n.01')]
+    features = [GeneralFeature('sex'), GeneralFeature('age'), GeneralFeature('alcohol')]
 
     # Iterate over all articles to calculate all the term frequencies and
     # document frequencies
@@ -64,8 +47,7 @@ def main():
             article[key] = re.split('\s+', article[key])
             # Remove blacklisted words
             article[key] = [word for word in article[key] if word not in blacklist]
-            # Count frequency of the main feature
-            d[key] = article[key].count(main.name)/len(article[key])
+            d[key] = main.calculate_tf(article[key])
 
         main.add_frequency(d)
 
@@ -73,18 +55,12 @@ def main():
         for feature in features:
             d = {}
             for key in article:
-                d[key] = article[key].count(feature.name)/len(article[key])
+                d[key] = feature.calculate_tf(article[key])
             # If at least one value in the dict is not zero, the feature is
             # present in the document
-            if not all(value == 0 for value in d.values()):
+            if any(value != 0 for value in d.values()):
                 feature.increase_doc_count()
             feature.add_frequency(d)
-
-
-
-    # TODO: Remove these prints
-    for feature in features:
-        print(feature.semantic_weight(len(data), main))
 
 
 if __name__ == '__main__':
