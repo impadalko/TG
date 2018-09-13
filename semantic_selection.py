@@ -62,6 +62,19 @@ def main():
                 feature.increase_doc_count()
             feature.add_frequency(d)
 
+    weights = []
+    norm = 0
+    for feature in features:
+        d = {}
+        d["name"] = " ".join(feature.name)
+        d["weight"] = feature.semantic_weight(len(data), main)
+        norm += d["weight"]*d["weight"]
+        weights.append(d)
+
+    norm = math.sqrt(norm)
+
+    for feature in weights:
+        print(feature["name"], feature["weight"]/norm)
 
 if __name__ == '__main__':
     main()

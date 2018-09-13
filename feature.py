@@ -108,7 +108,7 @@ class GeneralFeature(Feature):
 
         weight = 0
         for key in num:
-            weight += math.pow(num[key]/den[key], 2)
+            weight += num[key]/den[key]
 
-        return math.sqrt(weight)
+        return weight
 
