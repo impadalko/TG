@@ -32,7 +32,16 @@ def main():
     main = MainFeature('cancer')
 
     # TODO: Add all features
-    features = [GeneralFeature('sex'), GeneralFeature('age'), GeneralFeature('alcohol')]
+    features = [GeneralFeature('sex'), GeneralFeature('age'), GeneralFeature('race'),
+            GeneralFeature('education level'), GeneralFeature('family cancer'),
+            GeneralFeature('alcohol'), GeneralFeature('smoking'), GeneralFeature('tobacco'),
+            GeneralFeature('address'), GeneralFeature('date first screening'),
+            GeneralFeature('tumor location'), GeneralFeature('laterality'),
+            GeneralFeature('multiple tumors'), GeneralFeature('tnm'),
+            GeneralFeature('stage diagnosis'), GeneralFeature('reason non treatment'),
+            GeneralFeature('date diagnosis'), GeneralFeature('treatment outcome'),
+            GeneralFeature('date start treatment'), GeneralFeature('main treatment'),
+            GeneralFeature('occupation'), GeneralFeature('time death')]
 
     # Iterate over all articles to calculate all the term frequencies and
     # document frequencies
@@ -74,7 +83,7 @@ def main():
     norm = math.sqrt(norm)
 
     for feature in weights:
-        print(feature["name"], feature["weight"]/norm)
+        print(feature["name"], feature["weight"], feature["weight"]/norm)
 
 if __name__ == '__main__':
     main()

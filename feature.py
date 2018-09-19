@@ -25,7 +25,7 @@ class Feature:
         j = 0
         while i < len(text):
             while j < len(self.name):
-                if text[i + j] != self.name[j]:
+                if i + j < len(text) and text[i + j] != self.name[j]:
                     j = 0
                     i += 1
                     break
